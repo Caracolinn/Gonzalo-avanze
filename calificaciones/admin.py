@@ -2,40 +2,58 @@
 from django.contrib import admin
 from .models import CalificacionTributaria, Corredor
 
-# --- CONFIGURACIÓN PARA EL MODELO CORREDOR ---
 @admin.register(Corredor)
 class CorredorAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'codigo_corredor', 'activo')
     search_fields = ('nombre', 'codigo_corredor')
 
-# --- CONFIGURACIÓN PARA EL MODELO CALIFICACIÓN TRIBUTARIA ---
 @admin.register(CalificacionTributaria)
 class CalificacionTributariaAdmin(admin.ModelAdmin):
-    # Campos que se mostrarán en la lista principal
-    list_display = ('instrumento', 'fecha', 'corredor', 'instrumento_no_inscrito', 'secuencia')
+    list_display = (
+        'instrumento', 
+        'fecha', 
+        'corredor', 
+        'tipo_mercado', 
+        'fuente_ingreso', # NUEVO
+        'fecha_modificacion', # NUEVO
+        'origen',
+    )
     
-    # Habilita filtros en la barra lateral
-    list_filter = ('corredor', 'tipo_sociedad', 'fecha', 'instrumento_no_inscrito')
+    list_filter = (
+        'corredor', 
+        'tipo_mercado', 
+        'fuente_ingreso', # NUEVO
+        'origen',
+        'fecha_modificacion', # NUEVO
+    )
     
-    # Habilita un campo de búsqueda (incluyendo búsqueda por nombre del corredor)
-    search_fields = ('instrumento', 'secuencia', 'corredor__nombre')
+    search_fields = ('instrumento', 'secuencia', 'corredor__nombre', 'descripcion_dividendo')
 
-    # Organiza los campos del formulario en secciones
     fieldsets = (
         ('Datos de Identificación', {
             'fields': (
                 'corredor', 
                 'instrumento', 
                 'instrumento_no_inscrito', 
-                'fecha', 
+                'fecha',
+                'tipo_mercado',
+                'descripcion_dividendo',
+                'acogido_isfut',
+                'origen',
+                'factor_actualizacion',
+                'fuente_ingreso', # NUEVO
                 'secuencia', 
                 'numero_dividendo', 
                 'tipo_sociedad', 
                 'valor_historico'
             )
         }),
+        ('Fechas de Auditoría', { # NUEVA SECCIÓN
+            'classes': ('collapse',),
+            'fields': ('fecha_modificacion',)
+        }),
         ('Factores Tributarios', {
-            'classes': ('collapse',), # Esta sección aparecerá colapsada por defecto
+            'classes': ('collapse',),
             'fields': (
                 ('factor_8', 'factor_9', 'factor_10'),
                 ('factor_11', 'factor_12', 'factor_13'),
@@ -50,3 +68,6 @@ class CalificacionTributariaAdmin(admin.ModelAdmin):
             )
         }),
     )
+    
+    # Hacemos que los campos de auditoría sean de solo lectura
+    readonly_fields = ('fecha_modificacion',)
