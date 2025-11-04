@@ -6,14 +6,12 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         .table-responsive { max-height: 600px; }
-        th { position: sticky; top: 0; background: #f8f9fa; }
+        .preview-area { max-height: 300px; overflow-y: auto; background: #fdfdfd; border: 1px solid #ddd; }
+        th { position: sticky; top: 0; background: #f8f9fa; font-size: 0.85rem; white-space: nowrap; }
+        td { font-size: 0.9rem; white-space: nowrap; }
         .fila-seleccionada { background-color: #cfe2ff !important; }
         tbody tr:hover { cursor: pointer; }
-        .modal-body-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 1rem;
-        }
+        .modal-body-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
     </style>
 </head>
 <body>
@@ -59,9 +57,12 @@
                                 <th>Secuencia</th>
                                 <th>Isfut/Isift</th>
                                 <th>Origen</th>
+                                <th>Fuente</th>
                                 <th>Factor Act.</th>
-                                <th>F8 (Créd. DPC)</th>
-                                <th>F9 (Créd. DPC Acum)</th>
+                                <th>Última Modificación</th>
+                                {% for key, nombre in nombres_factores.items %}
+                                    <th>{{ nombre }} ({{ key|slice:"-2:" }})</th>
+                                {% endfor %}
                             </tr>
                         </thead>
                         <tbody id="grilla-calificaciones">
@@ -74,13 +75,43 @@
                                 <td>{{ cal.secuencia }}</td>
                                 <td>{% if cal.acogido_isfut %}Sí{% else %}No{% endif %}</td>
                                 <td>{{ cal.get_origen_display }}</td>
+                                <td>{{ cal.get_fuente_ingreso_display }}</td>
                                 <td>{{ cal.factor_actualizacion }}</td>
+                                <td>{{ cal.fecha_modificacion|date:"d-m-Y H:i" }}</td>
                                 <td>{{ cal.factor_8 }}</td>
                                 <td>{{ cal.factor_9 }}</td>
+                                <td>{{ cal.factor_10 }}</td>
+                                <td>{{ cal.factor_11 }}</td>
+                                <td>{{ cal.factor_12 }}</td>
+                                <td>{{ cal.factor_13 }}</td>
+                                <td>{{ cal.factor_14 }}</td>
+                                <td>{{ cal.factor_15 }}</td>
+                                <td>{{ cal.factor_16 }}</td>
+                                <td>{{ cal.factor_17 }}</td>
+                                <td>{{ cal.factor_18 }}</td>
+                                <td>{{ cal.factor_19 }}</td>
+                                <td>{{ cal.factor_20 }}</td>
+                                <td>{{ cal.factor_21 }}</td>
+                                <td>{{ cal.factor_22 }}</td>
+                                <td>{{ cal.factor_23 }}</td>
+                                <td>{{ cal.factor_24 }}</td>
+                                <td>{{ cal.factor_25 }}</td>
+                                <td>{{ cal.factor_26 }}</td>
+                                <td>{{ cal.factor_27 }}</td>
+                                <td>{{ cal.factor_28 }}</td>
+                                <td>{{ cal.factor_29 }}</td>
+                                <td>{{ cal.factor_30 }}</td>
+                                <td>{{ cal.factor_31 }}</td>
+                                <td>{{ cal.factor_32 }}</td>
+                                <td>{{ cal.factor_33 }}</td>
+                                <td>{{ cal.factor_34 }}</td>
+                                <td>{{ cal.factor_35 }}</td>
+                                <td>{{ cal.factor_36 }}</td>
+                                <td>{{ cal.factor_37 }}</td>
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="10" class="text-center">No se encontraron registros.</td>
+                                <td colspan="40" class="text-center">No se encontraron registros.</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -91,8 +122,12 @@
 
         <div class="mt-3">
             <button id="btnEliminar" class="btn btn-danger" disabled>Eliminar</button>
-            <a href="{% url 'carga_masiva_factores' %}" class="btn btn-success">Carga Masiva (Factores)</a>
-            <a href="{% url 'carga_masiva_montos' %}" class="btn btn-success">Carga Masiva (Montos)</a>
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#cargaMasivaFactoresModal">
+                Carga Masiva (Factores)
+            </button>
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#cargaMasivaMontosModal">
+                Carga Masiva (Montos)
+            </button>
             <button id="btnIngresar" type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#ingresoModalPaso1">
                 Ingresar
             </button>
@@ -132,6 +167,7 @@
             </div>
         </div>
     </div>
+
     <div class="modal fade" id="ingresoModalPaso2" tabindex="-1" aria-labelledby="ingresoModalPaso2Label" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
@@ -161,6 +197,7 @@
             </div>
         </div>
     </div>
+
     <div class="modal fade" id="ingresoModalPaso3" tabindex="-1" aria-labelledby="ingresoModalPaso3Label" aria-hidden="true">
         <div class="modal-dialog modal-xl">
             <div class="modal-content">
@@ -190,9 +227,60 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="cargaMasivaFactoresModal" tabindex="-1" aria-labelledby="cargaFactoresLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <form id="formCargaFactores" action="{% url 'carga_masiva_factores' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="mb-3">{{ carga_csv_form.corredor.label_tag }} {{ carga_csv_form.corredor }}</div>
+                        <div class="mb-3">{{ carga_csv_form.archivo_csv.label_tag }} {{ carga_csv_form.archivo_csv }}</div>
+                        <button type="button" class="btn btn-info btn-sm" id="btnPrevisualizarFactores">Previsualizar</button>
+                        <hr>
+                        <div id="previewFactoresError" class="alert alert-danger" style="display: none;"></div>
+                        <h5>Previsualización (Primeras 5 filas):</h5>
+                        <div id="previewFactoresArea" class="preview-area table-responsive">
+                            <small>Seleccione un archivo para ver la previsualización.</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" id="btnConfirmarCargaFactores" disabled>Confirmar Carga</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal fade" id="cargaMasivaMontosModal" tabindex="-1" aria-labelledby="cargaMontosLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <form id="formCargaMontos" action="{% url 'carga_masiva_montos' %}" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="mb-3">{{ carga_csv_form.corredor.label_tag }} {{ carga_csv_form.corredor }}</div>
+                        <div class="mb-3">{{ carga_csv_form.archivo_csv.label_tag }} {{ carga_csv_form.archivo_csv }}</div>
+                        <button type="button" class="btn btn-info btn-sm" id="btnPrevisualizarMontos">Previsualizar</button>
+                        <hr>
+                        <div id="previewMontosError" class="alert alert-danger" style="display: none;"></div>
+                        <h5>Previsualización (Factores calculados, Primeras 5 filas):</h5>
+                        <div id="previewMontosArea" class="preview-area table-responsive">
+                            <small>Seleccione un archivo para ver la previsualización.</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" id="btnConfirmarCargaMontos" disabled>Confirmar Carga</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
     <script>
         function getCookie(name) {
             let cookieValue = null;
@@ -222,7 +310,9 @@
         $(document).ready(function() {
             var modalPaso1 = new bootstrap.Modal(document.getElementById('ingresoModalPaso1'));
             var modalPaso2 = new bootstrap.Modal(document.getElementById('ingresoModalPaso2'));
-            var modalPaso3 = new bootstrap.Modal(document.getElementById('ingresoModalPaso3')); // <-- NUEVA MODAL
+            var modalPaso3 = new bootstrap.Modal(document.getElementById('ingresoModalPaso3'));
+            var modalCargaFactores = new bootstrap.Modal(document.getElementById('cargaMasivaFactoresModal'));
+            var modalCargaMontos = new bootstrap.Modal(document.getElementById('cargaMasivaMontosModal'));
             var idSeleccionado = null;
             var esModificacion = false;
 
@@ -244,10 +334,15 @@
             // --- Lógica del botón INGRESAR ---
             $("#btnIngresar").on("click", function() {
                 esModificacion = false;
-                $("#formIngresoBasico")[0].reset();
+                let form = $("#formIngresoBasico");
+                form[0].reset(); 
+                let mercadoFiltro = "{{ form.tipo_mercado.value }}";
+                let periodoFiltro = "{{ form.periodo_comercial.value }}";
+                if (mercadoFiltro) { form.find('[name="tipo_mercado"]').val(mercadoFiltro); }
+                if (periodoFiltro) { form.find('[name="periodo"]').val(periodoFiltro); }
                 $("#ingresoModalLabel").text("Ingresar Nueva Calificación (Paso 1 de 3)");
-                $("#formIngresoBasico").attr('action', "{% url 'ingresar_calificacion' %}");
-                $("#formIngresoBasico").attr('method', 'post');
+                form.attr('action', "{% url 'ingresar_calificacion' %}");
+                form.attr('method', 'post');
                 $("#erroresPaso1").hide();
             });
             
@@ -273,7 +368,6 @@
                                 form.find('[name="factor_actualizacion"]').val(data.factor_actualizacion);
                                 form.find('[name="descripcion_dividendo"]').val(data.descripcion_dividendo);
                                 form.find('[name="acogido_isfut"]').prop('checked', data.acogido_isfut);
-                                
                                 $("#ingresoModalLabel").text("Modificar Calificación (Paso 1 de 3)");
                                 $("#formIngresoBasico").attr('action', `/calificaciones/modificar/${idSeleccionado}/`);
                                 $("#formIngresoBasico").attr('method', 'post');
@@ -286,7 +380,7 @@
                 }
             });
 
-            // --- Lógica del formulario PASO 1 (Ingresar O Modificar) ---
+            // --- Lógica del formulario PASO 1 ---
             $("#formIngresoBasico").on("submit", function(e) {
                 e.preventDefault(); 
                 var form = $(this);
@@ -300,19 +394,14 @@
                         if (response.success) {
                             modalPaso1.hide();
                             var calificacionId = response.calificacion_id;
-                            
-                            // Preparamos la Modal 2
                             var urlPaso2 = `/calificaciones/ingresar-montos/${calificacionId}/`;
                             $("#formIngresoMontos").attr('action', urlPaso2);
                             $("#formIngresoMontos")[0].reset();
                             $("#erroresPaso2").hide();
-                            
-                            // Preparamos la Modal 3
                             var urlPaso3 = `/calificaciones/guardar-factores/${calificacionId}/`;
                             $("#formIngresoFactores").attr('action', urlPaso3);
                             $("#formIngresoFactores")[0].reset();
                             $("#erroresPaso3").hide();
-
                             modalPaso2.show();
                         } else {
                             $("#erroresPaso1").html("Error: " + response.errors).show();
@@ -334,18 +423,13 @@
                     headers: { "X-CSRFToken": csrftoken },
                     success: function(response) {
                         if (response.success) {
-                            // ¡ÉXITO! Ahora poblamos la Modal 3 con los factores
                             modalPaso2.hide();
-                            
-                            // Rellenamos el formulario de factores (Paso 3)
                             let factores = response.factores;
                             let formPaso3 = $("#formIngresoFactores");
                             for (let i = 8; i < 38; i++) {
                                 let key = `factor_${i}`;
                                 formPaso3.find(`[name="${key}"]`).val(factores[key]);
                             }
-
-                            // Mostramos la Modal 3
                             modalPaso3.show();
                         } else {
                             $("#erroresPaso2").html("Error: " + response.errors).show();
@@ -355,7 +439,7 @@
                 });
             });
 
-            // --- ¡NUEVA! Lógica del formulario PASO 3 (Factores) ---
+            // --- Lógica del formulario PASO 3 (Factores) ---
             $("#formIngresoFactores").on("submit", function(e) {
                 e.preventDefault();
                 var form = $(this);
@@ -367,13 +451,11 @@
                     headers: { "X-CSRFToken": csrftoken },
                     success: function(response) {
                         if (response.success) {
-                            // ¡TERMINADO! Cerramos la modal y recargamos
                             modalPaso3.hide();
                             var mensaje = esModificacion ? "Calificación modificada exitosamente." : "Calificación ingresada exitosamente.";
                             mostrarAlerta(mensaje, "success");
                             setTimeout(function() { location.reload(); }, 1500);
                         } else {
-                            // Mostramos el error de validación (ej. suma > 1)
                             $("#erroresPaso3").html("Error: " + response.errors).show();
                         }
                     },
@@ -406,6 +488,129 @@
                     });
                 }
             });
+
+            // --- Lógica para PREVISUALIZAR Carga Masiva (Factores) ---
+            $("#btnPrevisualizarFactores").on("click", function() {
+                let form = $("#formCargaFactores")[0];
+                let formData = new FormData(form);
+                
+                // --- ¡FIX! ---
+                let corredorId = $("#formCargaFactores [name='corredor']").val();
+                formData.append('corredor', corredorId);
+                
+                $.ajax({
+                    type: "POST",
+                    url: "{% url 'previsualizar_csv' %}",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: { "X-CSRFToken": csrftoken },
+                    success: function(response) {
+                        if (response.success) {
+                            $("#previewFactoresArea").html(response.tabla_html);
+                            $("#previewFactoresError").hide();
+                            $("#btnConfirmarCargaFactores").prop("disabled", false);
+                        } else {
+                            $("#previewFactoresArea").html("<small>Error al leer el archivo.</small>");
+                            $("#previewFactoresError").text(response.errors).show();
+                            $("#btnConfirmarCargaFactores").prop("disabled", true);
+                        }
+                    },
+                    error: function() {
+                        $("#previewFactoresError").text("Error de conexión.").show();
+                    }
+                });
+            });
+            
+            // --- Lógica para PREVISUALIZAR Carga Masiva (Montos) ---
+            $("#btnPrevisualizarMontos").on("click", function() {
+                let form = $("#formCargaMontos")[0];
+                let formData = new FormData(form);
+                
+                // --- ¡FIX! ---
+                let corredorId = $("#formCargaMontos [name='corredor']").val();
+                formData.append('corredor', corredorId);
+                
+                $.ajax({
+                    type: "POST",
+                    url: "{% url 'previsualizar_csv' %}",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: { "X-CSRFToken": csrftoken },
+                    success: function(response) {
+                        if (response.success) {
+                            $("#previewMontosArea").html(response.tabla_html);
+                            $("#previewMontosError").hide();
+                            $("#btnConfirmarCargaMontos").prop("disabled", false);
+                        } else {
+                            $("#previewMontosArea").html("<small>Error al leer el archivo.</small>");
+                            $("#previewMontosError").text(response.errors).show();
+                            $("#btnConfirmarCargaMontos").prop("disabled", true);
+                        }
+                    },
+                    error: function() {
+                        $("#previewMontosError").text("Error de conexión.").show();
+                    }
+                });
+            });
+
+            // --- Lógica para CONFIRMAR Carga Masiva (Factores) ---
+            $("#formCargaFactores").on("submit", function(e) {
+                e.preventDefault();
+                let form = $(this)[0];
+                let formData = new FormData(form);
+                
+                $.ajax({
+                    type: "POST",
+                    url: $(this).attr('action'),
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: { "X-CSRFToken": csrftoken },
+                    success: function(response) {
+                        if (response.success) {
+                            modalCargaFactores.hide();
+                            mostrarAlerta(response.message, 'success');
+                            setTimeout(function() { location.reload(); }, 1500);
+                        } else {
+                            $("#previewFactoresError").text(response.errors).show();
+                        }
+                    },
+                    error: function() {
+                        $("#previewFactoresError").text("Error de conexión.").show();
+                    }
+                });
+            });
+
+            // --- Lógica para CONFIRMAR Carga Masiva (Montos) ---
+            $("#formCargaMontos").on("submit", function(e) {
+                e.preventDefault();
+                let form = $(this)[0];
+                let formData = new FormData(form);
+                
+                $.ajax({
+                    type: "POST",
+                    url: $(this).attr('action'),
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: { "X-CSRFToken": csrftoken },
+                    success: function(response) {
+                        if (response.success) {
+                            modalCargaMontos.hide();
+                            mostrarAlerta(response.message, 'success');
+                            setTimeout(function() { location.reload(); }, 1500);
+                        } else {
+                            $("#previewMontosError").text(response.errors).show();
+                        }
+                    },
+                    error: function() {
+                        $("#previewMontosError").text("Error de conexión.").show();
+                    }
+                });
+            });
+
         });
     </script>
 </body>

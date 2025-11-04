@@ -16,10 +16,13 @@ urlpatterns = [
     path('obtener/<int:calificacion_id>/', views.obtener_calificacion_json, name='obtener_calificacion_json'),
     path('modificar/<int:calificacion_id>/', views.modificar_calificacion, name='modificar_calificacion'),
 
-    # --- NUEVA RUTA PARA GUARDAR FACTORES (Paso 3) ---
+    # Flujo de Guardado (Paso 3)
     path('guardar-factores/<int:calificacion_id>/', views.guardar_factores, name='guardar_factores'),
     
-    # Flujo de Carga Masiva
+    # --- ¡NUEVA RUTA DE PREVISUALIZACIÓN! ---
+    path('previsualizar-csv/', views.previsualizar_csv, name='previsualizar_csv'),
+
+    # Flujo de Carga Masiva (ahora llamados por AJAX)
     path('upload/factores/', views.carga_masiva_factores, name='carga_masiva_factores'),
     path('upload/montos/', views.carga_masiva_montos, name='carga_masiva_montos'),
 ]
