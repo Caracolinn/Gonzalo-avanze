@@ -1,0 +1,14 @@
+# Base de datos de SQLite
+db.sqlite3
+db.sqlite3-journal
+
+# Entorno virtual
+venv/
+*.env
+
+# Archivos de caché de Python
+__pycache__/
+*.pyc
+
+# Archivos de sistema
+.DS_Store
