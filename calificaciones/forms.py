@@ -2,16 +2,15 @@
 from django import forms
 from .models import Corredor, CalificacionTributaria
 
+# --- FORMULARIO DE CARGA (ACTUALIZADO) ---
+# ¡Eliminamos el campo 'corredor'!
 class CargaCSVForm(forms.Form):
     archivo_csv = forms.FileField(
         label='Seleccionar archivo CSV',
         widget=forms.ClearableFileInput(attrs={'class': 'form-control'})
     )
-    corredor = forms.ModelChoiceField(
-        queryset=Corredor.objects.filter(activo=True),
-        label='Seleccionar Corredor',
-        widget=forms.Select(attrs={'class': 'form-select'})
-    )
+
+# --- (El resto de los formularios se quedan exactamente igual) ---
 
 # --- FORMULARIO PARA LOS FILTROS DEL MANTENEDOR ---
 class FiltroCalificacionesForm(forms.Form):

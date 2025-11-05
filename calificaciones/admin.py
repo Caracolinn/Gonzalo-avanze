@@ -2,33 +2,49 @@
 from django.contrib import admin
 from .models import CalificacionTributaria, Corredor
 
+# --- CONFIGURACIÓN PARA EL MODELO CORREDOR (ACTUALIZADO) ---
 @admin.register(Corredor)
 class CorredorAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'codigo_corredor', 'activo')
-    search_fields = ('nombre', 'codigo_corredor')
+    # Añadimos 'usuario' para ver quién está vinculado
+    list_display = ('nombre', 'codigo_corredor', 'activo', 'usuario')
+    search_fields = ('nombre', 'codigo_corredor', 'usuario__username')
+    
+    # Hacemos que 'usuario' sea un campo de autocompletar
+    autocomplete_fields = ['usuario']
+    
+    # Organizamos la vista
+    fieldsets = (
+        ('Datos del Corredor', {'fields': ('nombre', 'codigo_corredor', 'activo')}),
+        ('Vínculo de Seguridad', {'fields': ('usuario',)}),
+    )
 
+# --- CONFIGURACIÓN PARA EL MODELO CALIFICACIÓN TRIBUTARIA (ACTUALIZADO) ---
 @admin.register(CalificacionTributaria)
 class CalificacionTributariaAdmin(admin.ModelAdmin):
     list_display = (
         'instrumento', 
         'fecha', 
-        'corredor', 
+        'corredor', # Ahora podemos ver a qué corredor pertenece
         'tipo_mercado', 
-        'fuente_ingreso', # NUEVO
-        'fecha_modificacion', # NUEVO
+        'fuente_ingreso',
+        'fecha_modificacion',
         'origen',
     )
     
     list_filter = (
-        'corredor', 
+        'corredor', # <-- ¡Ahora podemos filtrar por corredor!
         'tipo_mercado', 
-        'fuente_ingreso', # NUEVO
+        'fuente_ingreso',
         'origen',
-        'fecha_modificacion', # NUEVO
+        'fecha_modificacion',
     )
     
     search_fields = ('instrumento', 'secuencia', 'corredor__nombre', 'descripcion_dividendo')
+    
+    # Hacemos que el campo 'corredor' sea de solo lectura
+    readonly_fields = ('fecha_modificacion',)
 
+    # (El resto del 'fieldsets' se queda igual que antes)
     fieldsets = (
         ('Datos de Identificación', {
             'fields': (
@@ -41,14 +57,14 @@ class CalificacionTributariaAdmin(admin.ModelAdmin):
                 'acogido_isfut',
                 'origen',
                 'factor_actualizacion',
-                'fuente_ingreso', # NUEVO
+                'fuente_ingreso',
                 'secuencia', 
                 'numero_dividendo', 
                 'tipo_sociedad', 
                 'valor_historico'
             )
         }),
-        ('Fechas de Auditoría', { # NUEVA SECCIÓN
+        ('Fechas de Auditoría', {
             'classes': ('collapse',),
             'fields': ('fecha_modificacion',)
         }),
@@ -68,6 +84,3 @@ class CalificacionTributariaAdmin(admin.ModelAdmin):
             )
         }),
     )
-    
-    # Hacemos que los campos de auditoría sean de solo lectura
-    readonly_fields = ('fecha_modificacion',)

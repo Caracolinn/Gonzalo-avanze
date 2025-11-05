@@ -2,9 +2,19 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.contrib.auth.models import User # <-- ¡NUEVA IMPORTACIÓN!
 
-# --- MODELO PARA LOS CORREDORES ---
+# --- MODELO PARA LOS CORREDORES (ACTUALIZADO) ---
 class Corredor(models.Model):
+    # --- ¡NUEVO CAMPO DE VÍNCULO! ---
+    usuario = models.OneToOneField(
+        User,
+        on_delete=models.SET_NULL, # Si borras el Usuario, el Corredor no se borra
+        null=True,
+        blank=True,
+        verbose_name="Usuario Django Vinculado"
+    )
+    
     nombre = models.CharField(max_length=100, unique=True, verbose_name="Nombre del Corredor")
     codigo_corredor = models.CharField(max_length=10, unique=True, verbose_name="Código")
     activo = models.BooleanField(default=True)
@@ -17,7 +27,7 @@ class Corredor(models.Model):
         verbose_name_plural = "Corredores"
 
 
-# --- MODELO PRINCIPAL PARA LAS CALIFICACIONES (CON NUEVOS CAMPOS) ---
+# --- MODELO PRINCIPAL PARA LAS CALIFICACIONES (COMPLETO) ---
 class CalificacionTributaria(models.Model):
     
     # --- Opciones para los nuevos campos ---
@@ -58,7 +68,7 @@ class CalificacionTributaria(models.Model):
         help_text="Número de secuencia"
     )
     
-    # --- CAMPOS DEL MANTENEDOR (Añadidos en el paso anterior) ---
+    # --- CAMPOS DEL MANTENEDOR ---
     tipo_mercado = models.CharField(
         max_length=3,
         choices=TIPO_MERCADO_CHOICES,
@@ -87,7 +97,7 @@ class CalificacionTributaria(models.Model):
         verbose_name="Factor de Actualización"
     )
     
-    # --- CAMPOS DE HISTORIAS #10 y #16 ---
+    # --- CAMPOS DE AUDITORÍA ---
     fecha_modificacion = models.DateTimeField(
         auto_now=True, # Actualiza automáticamente la fecha cada vez que se guarda
         verbose_name="Última Modificación"
@@ -98,7 +108,6 @@ class CalificacionTributaria(models.Model):
         default='MAN', # Por defecto 'Ingreso Manual'
         verbose_name="Fuente de Ingreso"
     )
-    # --- FIN CAMPOS NUEVOS ---
 
     numero_dividendo = models.IntegerField(
         verbose_name="Número de dividendo"
@@ -118,7 +127,7 @@ class CalificacionTributaria(models.Model):
         verbose_name="Instrumento No Inscrito"
     )
 
-    # --- CAMPOS DE FACTORES (del 8 al 37) ---
+    # --- CAMPOS DE FACTORES (TODOS) ---
     validator_factor = [MinValueValidator(0), MaxValueValidator(1)]
     factor_8 = models.DecimalField(max_digits=9, decimal_places=8, default=0.0, validators=validator_factor)
     factor_9 = models.DecimalField(max_digits=9, decimal_places=8, default=0.0, validators=validator_factor)
@@ -151,10 +160,9 @@ class CalificacionTributaria(models.Model):
     factor_36 = models.DecimalField(max_digits=9, decimal_places=8, default=0.0, validators=validator_factor)
     factor_37 = models.DecimalField(max_digits=9, decimal_places=8, default=0.0, validators=validator_factor)
 
-    # --- LÓGICA DE VALIDACIÓN (REGLA CONFIRMADA) ---
+    # --- LÓGICA DE VALIDACIÓN ---
     def clean(self):
         super().clean()
-        # Suma de factores del 8 al 19
         suma_factores = (
             self.factor_8 + self.factor_9 + self.factor_10 + self.factor_11 +
             self.factor_12 + self.factor_13 + self.factor_14 + self.factor_15 +

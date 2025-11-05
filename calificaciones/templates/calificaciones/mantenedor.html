@@ -16,7 +16,10 @@
 </head>
 <body>
     <div class="container-fluid mt-4">
-        <h2>Mantenedor de Calificaciones Tributarias</h2>
+        <div class="d-flex justify-content-between align-items-center">
+            <h2>Mantenedor de Calificaciones Tributarias</h2>
+            <a href="{% url 'logout' %}" class="btn btn-outline-secondary">Cerrar Sesión ({{ request.user.username }})</a>
+        </div>
         
         <div id="alerta-contenedor">
             {% if messages %}
@@ -233,8 +236,11 @@
             <div class="modal-content">
                 <form id="formCargaFactores" action="{% url 'carga_masiva_factores' %}" method="post" enctype="multipart/form-data">
                     {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="cargaFactoresLabel">Carga Masiva de Factores</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
                     <div class="modal-body">
-                        <div class="mb-3">{{ carga_csv_form.corredor.label_tag }} {{ carga_csv_form.corredor }}</div>
                         <div class="mb-3">{{ carga_csv_form.archivo_csv.label_tag }} {{ carga_csv_form.archivo_csv }}</div>
                         <button type="button" class="btn btn-info btn-sm" id="btnPrevisualizarFactores">Previsualizar</button>
                         <hr>
@@ -258,8 +264,11 @@
             <div class="modal-content">
                 <form id="formCargaMontos" action="{% url 'carga_masiva_montos' %}" method="post" enctype="multipart/form-data">
                     {% csrf_token %}
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="cargaMontosLabel">Carga Masiva de Montos</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
                     <div class="modal-body">
-                        <div class="mb-3">{{ carga_csv_form.corredor.label_tag }} {{ carga_csv_form.corredor }}</div>
                         <div class="mb-3">{{ carga_csv_form.archivo_csv.label_tag }} {{ carga_csv_form.archivo_csv }}</div>
                         <button type="button" class="btn btn-info btn-sm" id="btnPrevisualizarMontos">Previsualizar</button>
                         <hr>
@@ -493,10 +502,7 @@
             $("#btnPrevisualizarFactores").on("click", function() {
                 let form = $("#formCargaFactores")[0];
                 let formData = new FormData(form);
-                
-                // --- ¡FIX! ---
-                let corredorId = $("#formCargaFactores [name='corredor']").val();
-                formData.append('corredor', corredorId);
+                formData.append('corredor', '1'); // <-- ¡El ID del corredor ya no se necesita aquí, pero la vista lo espera!
                 
                 $.ajax({
                     type: "POST",
@@ -526,10 +532,7 @@
             $("#btnPrevisualizarMontos").on("click", function() {
                 let form = $("#formCargaMontos")[0];
                 let formData = new FormData(form);
-                
-                // --- ¡FIX! ---
-                let corredorId = $("#formCargaMontos [name='corredor']").val();
-                formData.append('corredor', corredorId);
+                formData.append('corredor', '1'); // <-- ¡El ID del corredor ya no se necesita aquí!
                 
                 $.ajax({
                     type: "POST",
@@ -560,7 +563,8 @@
                 e.preventDefault();
                 let form = $(this)[0];
                 let formData = new FormData(form);
-                
+                formData.append('corredor', '1'); // <-- ¡El ID del corredor ya no se necesita aquí!
+
                 $.ajax({
                     type: "POST",
                     url: $(this).attr('action'),
@@ -588,6 +592,7 @@
                 e.preventDefault();
                 let form = $(this)[0];
                 let formData = new FormData(form);
+                formData.append('corredor', '1'); // <-- ¡El ID del corredor ya no se necesita aquí!
                 
                 $.ajax({
                     type: "POST",

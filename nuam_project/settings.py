@@ -121,3 +121,11 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# nuam_project/settings.py
+
+# ... (todo lo demás) ...
+
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'mantenedor' # <-- ¡AÑADE O CORRIGE ESTA LÍNEA!
+LOGOUT_REDIRECT_URL = 'login'

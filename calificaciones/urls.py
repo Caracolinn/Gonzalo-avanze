@@ -19,10 +19,8 @@ urlpatterns = [
     # Flujo de Guardado (Paso 3)
     path('guardar-factores/<int:calificacion_id>/', views.guardar_factores, name='guardar_factores'),
     
-    # --- ¡NUEVA RUTA DE PREVISUALIZACIÓN! ---
+    # Flujo de Carga Masiva
     path('previsualizar-csv/', views.previsualizar_csv, name='previsualizar_csv'),
-
-    # Flujo de Carga Masiva (ahora llamados por AJAX)
     path('upload/factores/', views.carga_masiva_factores, name='carga_masiva_factores'),
     path('upload/montos/', views.carga_masiva_montos, name='carga_masiva_montos'),
 ]
